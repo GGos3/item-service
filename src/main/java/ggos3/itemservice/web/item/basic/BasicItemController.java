@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -24,12 +25,11 @@ public class BasicItemController {
         return "basic/items";
     }
 
-    @GetMapping("/{itemID}")
+    @GetMapping("/{itemId}")
     public String item(@PathVariable Long itemId, Model model) {
         Item item = itemRepository.findById(itemId);
 
         model.addAttribute("item", item);
-
         return "basic/item";
     }
 
@@ -38,7 +38,7 @@ public class BasicItemController {
         return "basic/addForm";
     }
 
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV1(@RequestParam String itemName,
                             @RequestParam int price,
                             @RequestParam Integer quantity,
@@ -60,7 +60,7 @@ public class BasicItemController {
      * model.addAttribute("item", item); 자동 추가
      */
 
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV2(@ModelAttribute("item") Item item, Model model) {
         itemRepository.save(item);
 
@@ -73,7 +73,7 @@ public class BasicItemController {
      * 생략시 model에 저장되는 name은 클래스명 첫 글자만 소문자로 등록 Item -> item
      */
 
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV3(@ModelAttribute Item item) {
         itemRepository.save(item);
 
@@ -82,13 +82,34 @@ public class BasicItemController {
 
     /**
      * @ModelAttribute 자체 생략 가능
+     * int, long 등 단순 타입이 아닌경우 자동으로 @ModelAttribute가 추가됨
      * model.addAttribute(item) 자동 ㅊ가
      */
-    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV4(Item item) {
         itemRepository.save(item);
 
         return "basic/item";
+    }
+
+    //@PostMapping("/add")
+    public String addItemV5(Item item) {
+        itemRepository.save(item);
+
+        return "redirect:/basic/items/" + item.getId();
+    }
+
+    /**
+     * RedirectAttributes
+     */
+
+    @PostMapping("/add")
+    public String addItemV6(Item item, RedirectAttributes redirectAttributes) {
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+
+        return "redirect:/basic/items/{itemId}";
     }
 
     @GetMapping("/{itemId}/edit")
